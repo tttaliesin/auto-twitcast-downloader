@@ -1,0 +1,15 @@
+{
+  "url": "c:suzukinohaachan",
+  "check_interval": "60",
+  "auto_record": true,
+  "ytdlp_path": "C:/Users/tttaliesin/scoop/apps/ffmpeg/8.0/bin/yt-dlp.exe",
+  "ffmpeg_path": "C:/Users/tttaliesin/scoop/apps/ffmpeg/8.0/bin/ffmpeg.exe",
+  "save_path": "C:/Users/tttaliesin/Documents/twitcast",
+  "urls": [],
+  "channel_urls": [
+    "irune030",
+    "hanavin007",
+    "g:112335820121384004141",
+    "onwhite090"
+  ]
+}
