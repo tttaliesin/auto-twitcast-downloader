@@ -1,126 +1,128 @@
-# 트위캐스트 방송 감시 프로그램
+# 트위캐스트 자동 녹화 프로그램
 
-트위캐스트(TwitCasting) 방송인의 방송 시작/종료를 자동으로 감지하는 GUI 프로그램입니다.
+트위캐스트 스트림 모니터링 및 자동 녹화 애플리케이션
 
-## 주요 기능
+## 기능
 
-- 🎥 트위캐스트 방송 상태 실시간 감시
-- 🔴 방송 시작/종료 자동 감지
-- 📺 방송 제목 표시
-- ⏱️ 사용자 지정 가능한 확인 주기
-- 🎨 현대적인 다크 테마 GUI
-- 📝 상세한 로그 기록
+- 4채널 동시 모니터링
+- 방송 시작 시 자동 녹화
+- yt-dlp 기반 실시간 스트림 상태 감지
+- 시스템 트레이 지원
+- 설정 자동 저장
+- 채널별 독립 제어
 
-## 설치 방법
-
-### 필요 요구사항
+## 필수 요구사항
 
 - Python 3.13 이상
 - uv 패키지 매니저
+- yt-dlp 실행 파일
+- ffmpeg 실행 파일
 
-### 의존성 설치
+## 설치
 
 ```bash
 uv sync
 ```
 
-## 사용 방법
+## 실행 방법
 
-### 1. GUI로 실행
+### 소스코드 실행
 
 ```bash
 uv run python main.py
 ```
 
-프로그램이 실행되면:
-1. 트위캐스트 URL 또는 사용자 ID 입력
-   - 예: `https://twitcasting.tv/user_id` 또는 `user_id`
-2. 확인 주기(초) 설정 (기본값: 60초, 최소: 10초)
-3. "감시 시작" 버튼 클릭
-
-### 2. EXE 파일로 빌드
+### 실행 파일 빌드
 
 ```bash
 build.bat
 ```
 
-빌드가 완료되면 `dist\TwitCastingMonitor.exe` 파일이 생성됩니다.
+빌드 결과: `dist\TwitCastingMonitor.exe`
 
-**⭐ EXE 파일 단독 배포 가능**
-- `dist\TwitCastingMonitor.exe` 파일 하나만 배포해도 동작합니다
-- Python 설치 불필요
-- 모든 의존성이 EXE에 포함됩니다
-- customtkinter 테마 파일도 자동으로 포함됩니다
+실행 파일은 단독 실행 가능하며 외부 의존성이 필요하지 않음.
 
-## 빌드 방법
+## 설정
 
-### Windows
+### 공통 설정
+- **확인 주기**: 스트림 상태 확인 주기(초 단위, 최소 10초)
+- **자동 녹화**: 방송 시작 시 자동 녹화 활성화
+- **yt-dlp 경로**: yt-dlp 실행 파일 경로
+- **ffmpeg 경로**: ffmpeg 실행 파일 경로
+- **저장 경로**: 녹화 파일 저장 디렉토리
 
-```bash
-build.bat
+### 채널 설정
+4개 채널 각각 지원:
+- 트위캐스트 URL 또는 사용자 ID 입력
+- 개별 시작/중지 제어
+- 독립적인 상태 모니터링
+
+### 녹화 파일 저장 형식
+```
+{저장경로}/{사용자ID}/[{날짜}]_{제목}({ID})/[{날짜}]_{제목}({ID}).mp4
 ```
 
-### 수동 빌드
+## 아키텍처
 
-```bash
-uv sync
-uv run pyinstaller --clean build.spec
+```
+src/
+├── gui.py              # GUI 구현 (customtkinter)
+├── stream_checker.py   # 스트림 상태 감지 (yt-dlp)
+├── recorder.py         # 녹화 관리 (subprocess)
+├── config.py           # 설정 저장
+└── utils.py            # 유틸리티 함수
 ```
 
-빌드된 실행 파일은 `dist` 폴더에 생성됩니다.
+## 컨트롤
 
-## 화면 구성
+- **모두 시작**: URL이 설정된 모든 채널 모니터링 시작
+- **모두 중지**: 활성화된 모든 모니터링 세션 중지
+- **로그 지우기**: 로그 출력 삭제
+- **로그 숨기기/보기**: 로그 패널 토글
 
-- **설정 영역**: URL/ID 입력 및 확인 주기 설정
-- **버튼**: 감시 시작/중지, 로그 지우기
-- **상태 표시**: 현재 방송 상태 (대기 중/방송 중/방송 종료)
-- **로그 창**: 실시간 감시 로그
+## 기술 상세
 
-## 기술 스택
+- **GUI 프레임워크**: customtkinter
+- **스트림 감지**: yt-dlp JSON 메타데이터 추출
+- **녹화**: yt-dlp (ffmpeg 백엔드)
+- **비동기 처리**: asyncio (논블로킹 스트림 체크)
+- **프로세스 관리**: subprocess (시그널 핸들링)
+- **빌드 도구**: PyInstaller (단일 실행 파일)
 
-- **GUI 프레임워크**: customtkinter (MIT License)
-- **HTTP 클라이언트**: httpx
-- **HTML 파싱**: BeautifulSoup4
-- **빌드 도구**: PyInstaller
+## 설정 파일
+
+애플리케이션 디렉토리의 `config.json`에 자동 저장:
+```json
+{
+  "check_interval": "60",
+  "auto_record": false,
+  "ytdlp_path": "C:\\path\\to\\yt-dlp.exe",
+  "ffmpeg_path": "C:\\path\\to\\ffmpeg.exe",
+  "save_path": "C:\\Downloads",
+  "channel_urls": ["user1", "user2", "", ""]
+}
+```
+
+## yt-dlp 명령어
+
+녹화 시 실행되는 명령어:
+```bash
+yt-dlp -v -c --no-part \
+  --ffmpeg-location {ffmpeg_path} \
+  --restrict-filenames \
+  -o {output_template} \
+  --embed-thumbnail \
+  --merge-output-format mp4 \
+  https://twitcasting.tv/{user_id}
+```
+
+## 참고사항
+
+- 최소 확인 주기: 10초
+- 각 채널은 독립적으로 동작
+- 창 닫기 시 시스템 트레이로 최소화
+- 완전 종료는 트레이 메뉴의 "완전 종료" 사용
 
 ## 라이센스
 
 MIT License
-
-## 주의사항
-
-- 확인 주기를 너무 짧게 설정하면 서버에 부하를 줄 수 있으니 주의하세요.
-- 최소 확인 주기는 10초입니다.
-- 인터넷 연결이 필요합니다.
-
-## 문제 해결
-
-### 방송 감지가 안 되는 경우
-
-1. 올바른 사용자 ID를 입력했는지 확인
-2. 인터넷 연결 상태 확인
-3. 로그 창에서 오류 메시지 확인
-
-### 빌드 오류가 발생하는 경우
-
-1. Python 3.13 이상 설치 확인
-2. uv 패키지 매니저 설치 확인
-3. 의존성 재설치: `uv sync`
-
-### EXE 실행 시 오류가 발생하는 경우
-
-1. 백신 프로그램이 차단하는지 확인
-2. Windows Defender 예외 처리 추가
-3. 관리자 권한으로 실행 시도
-
-## 배포
-
-빌드된 `TwitCastingMonitor.exe` 파일은 다음과 같이 배포할 수 있습니다:
-
-1. **단일 파일 배포**: EXE 파일 하나만 공유
-2. **설치 불필요**: 받는 사람은 Python이나 다른 프로그램 설치 없이 바로 실행
-3. **MIT 라이센스**: 자유롭게 배포 및 수정 가능
-
-## 개발자 정보
-
-이 프로그램은 MIT 라이센스 하에 배포되며, 누구나 자유롭게 사용, 수정, 배포할 수 있습니다.
