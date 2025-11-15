@@ -68,7 +68,6 @@ class StreamRecorder:
             "-c",  # continue (resume)
             "--no-part",  # .part 확장자 사용 안 함
             "--ffmpeg-location", ffmpeg_path,
-            "--restrict-filenames",
             "-o", output_template,
             "--embed-thumbnail",
             "--merge-output-format", "mp4",

@@ -109,7 +109,6 @@ src/
 ```bash
 yt-dlp -v -c --no-part \
   --ffmpeg-location {ffmpeg_path} \
-  --restrict-filenames \
   -o {output_template} \
   --embed-thumbnail \
   --merge-output-format mp4 \
