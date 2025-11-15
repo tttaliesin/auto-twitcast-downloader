@@ -11,6 +11,7 @@ class StreamRecorder:
 
     def __init__(self):
         self.processes = {}  # {user_id: process}
+        self.output_threads = {}  # {user_id: thread}
         self.output_callback = None
 
     def set_output_callback(self, callback):
@@ -89,12 +90,15 @@ class StreamRecorder:
             # 출력 읽기 스레드 시작
             output_thread = threading.Thread(target=self._read_output, args=(user_id,), daemon=True)
             output_thread.start()
+            self.output_threads[user_id] = output_thread
 
             return True, f"녹화 시작: {user_id}"
 
         except Exception as e:
             if user_id in self.processes:
                 del self.processes[user_id]
+            if user_id in self.output_threads:
+                del self.output_threads[user_id]
             return False, f"녹화 시작 오류: {e}"
 
     def stop_recording(self, user_id: str) -> tuple[bool, str]:
@@ -131,6 +135,8 @@ class StreamRecorder:
                         capture_output=True,
                         creationflags=subprocess.CREATE_NO_WINDOW
                     )
+                    # 프로세스 정리 (zombie 방지)
+                    process.wait()
             else:
                 # Unix-like 시스템
                 process.terminate()
@@ -145,8 +151,11 @@ class StreamRecorder:
         except Exception as e:
             return False, f"{user_id}: 녹화 중지 오류: {e}"
         finally:
+            # 프로세스 및 스레드 참조 정리
             if user_id in self.processes:
                 del self.processes[user_id]
+            if user_id in self.output_threads:
+                del self.output_threads[user_id]
 
     def stop_all_recordings(self):
         """모든 녹화를 중지합니다."""

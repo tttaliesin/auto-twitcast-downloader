@@ -143,6 +143,9 @@ class ChannelMonitor(ctk.CTkFrame):
         self.gui.log_message(f"[채널{self.channel_num}] ⏹️  {self.user_id} 감시 중지")
         self.user_id = None
 
+        # 스레드 참조 정리
+        self.monitoring_thread = None
+
     def run_monitoring_loop(self):
         """백그라운드 감시 루프"""
         loop = asyncio.new_event_loop()
@@ -156,6 +159,8 @@ class ChannelMonitor(ctk.CTkFrame):
             ))
         finally:
             loop.close()
+            # 이벤트 루프 참조 정리
+            asyncio.set_event_loop(None)
 
     async def monitor_stream(self):
         """스트림 감시"""
@@ -646,9 +651,14 @@ class TwitCastingMonitorGUI(ctk.CTk):
                 monitor.stop_monitoring()
 
     def log_message(self, message: str):
-        """로그 메시지 추가"""
+        """로그 메시지 추가 (최대 1000줄 유지)"""
         self.log_output.insert("end", message + "\n")
         self.log_output.see("end")
+
+        # 로그 줄 수 제한 (1000줄 초과 시 오래된 줄 삭제)
+        line_count = int(self.log_output.index('end-1c').split('.')[0])
+        if line_count > 1000:
+            self.log_output.delete("1.0", f"{line_count - 1000}.0")
 
     def clear_log(self):
         """로그 지우기"""
